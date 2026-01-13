@@ -20,6 +20,7 @@ class NoteOut(BaseModel):
     id : int
     title:str
     content:Optional[str]
+    is_archived : bool
     
     class config:
         from_attributes: True
