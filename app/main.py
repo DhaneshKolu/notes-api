@@ -4,6 +4,7 @@ from app import models
 from app.routers import users,notes
 from app.logging_config import setup_logging
 from app.middleware import timing_middleware
+from app.routers import health
 setup_logging()
 
 models.Base.metadata.create_all(bind = engine)
@@ -13,4 +14,5 @@ app.middleware("http")(timing_middleware)
 
 app.include_router(users.router)
 app.include_router(notes.router)
+app.include_router(health.router)
 
