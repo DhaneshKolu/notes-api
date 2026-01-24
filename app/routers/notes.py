@@ -14,14 +14,19 @@ router = APIRouter(
     tags=["Notes"]
 )
 
-# ------------------ Cache Utils ------------------
 
 def invalidate_notes_cache(user_id: int):
-    keys = redis_client.keys(f"notes:{user_id}:*")
-    if keys:
-        redis_client.delete(*keys)
+    if not redis_client:
+        return
 
-# ------------------ Create Note ------------------
+    try:
+        keys = redis_client.keys(f"notes:{user_id}:*")
+        for key in keys:
+            redis_client.delete(key)
+    except Exception:
+        pass
+
+
 
 @router.post("/", response_model=schemas.NoteOut)
 def create_note(
@@ -43,7 +48,6 @@ def create_note(
 
     return new_note
 
-# ------------------ Get Notes ------------------
 
 @router.get("/", response_model=List[schemas.NoteOut])
 def get_notes(
@@ -78,7 +82,6 @@ def get_notes(
 
     return serialized_notes
 
-# ------------------ Archived Notes ------------------
 
 @router.get("/archived", response_model=List[schemas.NoteOut])
 def get_archived_notes(
@@ -94,7 +97,6 @@ def get_archived_notes(
         .all()
     )
 
-# ------------------ Update Note ------------------
 
 @router.patch("/{note_id}", response_model=schemas.NoteOut)
 def update_note(
@@ -130,7 +132,6 @@ def update_note(
 
     return note
 
-# ------------------ Archive (Soft Delete) ------------------
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_note(
@@ -167,7 +168,6 @@ def delete_note(
 
     return None
 
-# ------------------ Restore Note ------------------
 
 @router.post("/{note_id}/restore", response_model=schemas.NoteOut)
 def restore_note(
