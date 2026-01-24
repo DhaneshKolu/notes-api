@@ -4,13 +4,17 @@ from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime,timedelta,timezone
 from fastapi import Depends,HTTPException,status
 from sqlalchemy.orm import Session
+from config import (
+    SECRET_KEY,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES
+)
+
+
 
 from app.database import get_db
 from app import models
 
-SECRET_KEY = "19eh9eywehwqiehw98e283u293e2eh23"
-ALGORITHM = "HS256"
-TOKEN_TIME_EXPIRE_IN_MINS = 30
 
 pwd_context = CryptContext(schemes=["argon2"],deprecated = "auto")
 
@@ -24,7 +28,7 @@ def verify_password(plain,hashed):
 
 def create_access_token(data:dict):
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc)+timedelta(minutes=TOKEN_TIME_EXPIRE_IN_MINS)
+    expire = datetime.now(timezone.utc)+timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp":expire})
     jwt_encoded = jwt.encode(to_encode,SECRET_KEY,algorithm=ALGORITHM)
     return jwt_encoded

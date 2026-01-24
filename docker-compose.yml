@@ -1,0 +1,32 @@
+
+
+services:
+  db:
+    image: postgres:15
+    container_name: notes-db
+    restart: always
+    environment:
+      POSTGRES_USER:  postgres
+      POSTGRES_PASSWORD: 1234567890
+      POSTGRES_DB: notes_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  api:
+    build:  .
+    container_name: notes-api
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:1234567890@db:5432/notes_db
+      SECRET_KEY: 19eh9eywehwqiehw98e283u293e2eh23
+      ALGORITHM : HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES : 30
+    ports:
+      - "8000:8000"
+    command: >
+      uvicorn app.main:app --host 0.0.0.0 --port 8000
+volumes:
+  postgres_data:

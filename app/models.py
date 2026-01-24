@@ -20,6 +20,8 @@ class Note(Base):
     title = Column(String,nullable=False)
     content = Column(Text,nullable = False)
     is_archived = Column(Boolean,default = False)
+    created_at = Column(DateTime(timezone=True),server_default = func.now(),nullable=False)
+    updated_at = Column(DateTime(timezone = True),onupdate=func.now())
 
     owner_id = Column(Integer,ForeignKey("users.id"),nullable=False)
     
