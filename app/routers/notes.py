@@ -56,11 +56,15 @@ def get_notes(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user),
 ):
-    cache_key = f"notes:{current_user.id}:{skip}:{limit}"
+    cache_key = f"notes:{current_user.id}"
 
-    cached_notes = redis_client.get(cache_key)
-    if cached_notes:
-        return json.loads(cached_notes)
+    if redis_client:
+        try:
+            cached_notes = redis_client.get(cache_key)
+            if cached_notes:
+                return json.loads(cached_notes)
+        except Exception:
+            pass
 
     notes = (
         db.query(models.Note)
@@ -78,7 +82,12 @@ def get_notes(
         for note in notes
     ]
 
-    redis_client.setex(cache_key, 30, json.dumps(serialized_notes))
+    if redis_client:
+        try:
+            redis_client.set(cache_key, json.dumps(notes), ex=300)
+        except Exception:
+            pass
+
 
     return serialized_notes
 
